@@ -6,7 +6,6 @@ import { route as userRoute } from "./routes/userRoute.js"
 import { route as orderRoute } from "./routes/orderRoute.js"
 import cors from "cors"
 
-//const cors = require('cors');
 const app = express();
 app.use(bodyParser.json())
 dotenv.config();

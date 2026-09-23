@@ -1,8 +1,8 @@
 import express from "express"
-import { create } from "../controller/userController.js"
+import { create, getAll, getUserByID } from "../controller/userController.js"
 
 export const route = express.Router()
 
 route.post("/user", create)
-
-
+route.get("/users", getAll)
+route.get("/users/:userID", getUserByID)

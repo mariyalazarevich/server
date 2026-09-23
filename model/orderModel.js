@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 
-const orderShema = mongoose.Schema({
+const orderSchema = mongoose.Schema({
     data: {type: Date},
-    time: {type: String},
+    time: {type: String}, //надо добавить в форму заказа поле со временем
     email: {type: String},
     name: {type: String},
     surname: {type: String},
     tel: {type: String},
+    userID: {type: String}
 })
 
-export default mongoose.model("Orders", orderShema)
+export default mongoose.model("Orders", orderSchema)
