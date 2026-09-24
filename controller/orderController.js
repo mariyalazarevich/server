@@ -52,3 +52,44 @@ export const getOrdersByUserID = async (req, res) => {
         res.status(500).json({errorMessage: error.message});
     }
 }
+
+export const getOrderByID = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const ordersWithID = await Orders.findOne(id)
+        if (!ordersWithID || ordersWithID.length === 0) {
+            return res.status(404).json({message: "There are no Order with your request"})
+        }
+        res.status(200).json(ordersWithID);
+    } catch (error) {
+        res.status(500).json({errorMessage: error.message});
+    }
+}
+
+export const updateOrderByID = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const orderWithID = await Orders.findOne(id);;
+        if (!orderWithID){
+            return res.status(404).json({message: "There are no Order with this ID"})
+        }
+        await Orders.findByIdAndUpdate(id, req.body, {new: true})
+        res.status(200).json({message: "Order updated succesfully"})
+    } catch (error) {
+        res.status(500).json({errorMessage: error.message});
+    }
+}
+
+export const deleteByID = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const orderWithID = await Orders.findOne(id);;
+        if (!orderWithID){
+            return res.status(404).json({message: "There are no Order with this ID"})
+        }
+        await Orders.findByIdAndDelete(id);
+        res.status(200).json({message: "Order deleted succesfully"})
+    } catch (error) {
+        res.status(500).json({errorMessage: error.message});
+    }
+}
