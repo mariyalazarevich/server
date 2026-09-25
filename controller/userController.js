@@ -1,8 +1,12 @@
 import Users from "../model/userModel.js";
+import {sha256} from "../scripts.js"
 
 export const create = async (req, res) => {
     try {
+        const {password} = req.body;
+        const hashPassword = await sha256(password);
         const newUserInfo = req.body;
+        newUserInfo.password = hashPassword;
         const newUser = new Users(newUserInfo);
 
         const {login} = newUser;
@@ -14,7 +18,6 @@ export const create = async (req, res) => {
         }
 
         res.status(200).json(await newUser.save());
-
 
     } catch (error) {
         res.status(500).json({errorMessage: error.message});
