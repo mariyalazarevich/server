@@ -5,6 +5,9 @@ import bodyParser from "body-parser"
 import { route as userRoute } from "./routes/userRoute.js"
 import { route as orderRoute } from "./routes/orderRoute.js"
 import cors from "cors"
+import cookieParser from "cookie-parser"
+
+export const SECRET_KEY = "TRIAL-RAECT-APP-SECRET-KEY"
 
 const app = express();
 app.use(bodyParser.json())
@@ -12,6 +15,7 @@ dotenv.config();
 app.use(cors({
   origin: 'http://localhost:5173' 
 }));
+app.use(cookieParser());
 
 const PORT = process.env.PORT || 7000
 const MONGO_URL = process.env.MONGO_URL

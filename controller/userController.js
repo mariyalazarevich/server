@@ -1,5 +1,7 @@
 import Users from "../model/userModel.js";
 import {sha256} from "../scripts.js"
+import { SECRET_KEY as key } from "../index.js";
+import jwt from "jsonwebtoken"
 
 export const create = async (req, res) => {
     try {
@@ -7,15 +9,16 @@ export const create = async (req, res) => {
         const hashPassword = await sha256(password);
         const newUserInfo = req.body;
         newUserInfo.password = hashPassword;
-        const newUser = new Users(newUserInfo);
 
-        const {login} = newUser;
+        const {login} = newUserInfo;
 
         const userExist = await Users.findOne({login});
 
         if (userExist){
             return res.status(400).json({message: "User with this login already exist"});
         }
+
+        const newUser = new Users(newUserInfo);
 
         res.status(200).json(await newUser.save());
 
@@ -72,6 +75,35 @@ export const deleteByID = async (req, res) => {
         }
         await Users.findByIdAndDelete(id);
         res.status(200).json({message: "User deleted succesfully"})
+    } catch (error) {
+        res.status(500).json({errorMessage: error.message});
+    }
+}
+
+export const logIn = async (req, res) => {
+    try {
+        const {login, password} = req.body
+
+        const hashPassword = await sha256(password)
+
+        const existUser = await Users.findOne({login, password: hashPassword})
+
+        if (!existUser){
+            return res.status(404).json({message: "The user doesn't exist"})
+        }
+
+        const token = jwt.sign(
+            {
+                userId: existUser._id,
+                login: existUser.login
+            }, 
+            key, 
+            {expiresIn: "15m"}
+        )
+
+        res.cookie("token", token, {httpOnly: true})
+        res.status(200).json(token)
+
     } catch (error) {
         res.status(500).json({errorMessage: error.message});
     }
