@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const orderSchema = mongoose.Schema({
     data: {type: Date},
-    time: {type: String}, //надо добавить в форму заказа поле со временем
+    time: {type: String}, 
     email: {type: String},
     name: {type: String},
     surname: {type: String},

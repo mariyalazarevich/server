@@ -33,6 +33,10 @@ export const getAll = async (req, res) => {
         if(!allUsers || allUsers.length === 0) {
             return res.status(404).json({message: "There are no Users with your request"})
         }
+        const isAdmin = await checkAdmin(req, res)
+        if (!isAdmin){
+            return res.status(403).json({message: "Forbidden"})
+        }
         res.status(200).json(allUsers);
     } catch (error) {
         res.status(500).json({errorMessage: error.message});
@@ -42,9 +46,14 @@ export const getAll = async (req, res) => {
 export const getUserByID = async (req, res) => {
     try {
         const id = req.params.id;
-        const user = await Users.findOne(id)
+        const user = await Users.findOne({_id: id})
         if (!user) {
             return res.status(404).json({message: "There are no Users with this ID"})
+        }
+        const isAdmin = await checkAdmin(req, res)
+        const isVAlidUser = await checkUser(req, res, user._id.toString())
+        if (!isAdmin && !isVAlidUser){
+            return res.status(403).json({message: "Forbidden"})
         }
         res.status(200).json(user);
     } catch (error) {
@@ -55,11 +64,16 @@ export const getUserByID = async (req, res) => {
 export const updateUserByID = async (req, res) => {
     try {
         const id = req.params.id;
-        const userWithID = await Users.findOne(id);;
+        const userWithID = await Users.findOne({_id: id});
         if (!userWithID){
             return res.status(404).json({message: "There are no User with this ID"})
         }
-        await Users.findByIdAndUpdate(id, req.body, {new: true})
+        const isAdmin = await checkAdmin(req, res)
+        const isVAlidUser = await checkUser(req, res, userWithID._id.toString())
+        if (!isAdmin && !isVAlidUser){
+            return res.status(403).json({message: "Forbidden"})
+        }
+        await Users.findByIdAndUpdate({_id: id}, req.body, {new: true})
         res.status(200).json({message: "User updated succesfully"})
     } catch (error) {
         res.status(500).json({errorMessage: error.message});
@@ -69,11 +83,16 @@ export const updateUserByID = async (req, res) => {
 export const deleteByID = async (req, res) => {
     try {
         const id = req.params.id;
-        const userWithID = await Users.findOne(id);;
+        const userWithID = await Users.findOne({_id: id});;
         if (!userWithID){
             return res.status(404).json({message: "There are no User with this ID"})
         }
-        await Users.findByIdAndDelete(id);
+        const isAdmin = await checkAdmin(req, res)
+        const isVAlidUser = await checkUser(req, res, userWithID._id.toString())
+        if (!isAdmin && !isVAlidUser){
+            return res.status(403).json({message: "Forbidden"})
+        }
+        await Users.findByIdAndDelete({_id: id});
         res.status(200).json({message: "User deleted succesfully"})
     } catch (error) {
         res.status(500).json({errorMessage: error.message});
@@ -94,7 +113,7 @@ export const logIn = async (req, res) => {
 
         const token = jwt.sign(
             {
-                userId: existUser._id,
+                _id: existUser._id,
                 login: existUser.login
             }, 
             key, 
@@ -107,4 +126,42 @@ export const logIn = async (req, res) => {
     } catch (error) {
         res.status(500).json({errorMessage: error.message});
     }
+}
+
+export const logOut = async (req, res) => {
+    try {
+        const token = req.cookies.token
+        res.clearCookie("token");
+        res.status(204).json({message: "Logout was successfull"})
+        req.user = jwt.verify(token, key)
+        next()
+    } catch (error) {
+        res.clearCookie("token");
+        res.status(401).json({message: "Unauthorized"})
+    }
+}
+
+export const checkToken = async (req, res, next) => {
+    try {
+        const token = req.cookies.token
+        req.user = jwt.verify(token, key)
+        next()
+    } catch (error) {
+        res.clearCookie("token");
+        res.status(401).json({message: "Unauthorized"})
+    }
+}
+
+export const checkUser = async (req, res, userID) => {
+    if ( userID !== req.user._id){
+        return false
+    }
+    return true
+}
+
+export const checkAdmin = async (req, res) => {
+    if (req.user.login !== "admin"){
+        return false
+    }
+    return true
 }
