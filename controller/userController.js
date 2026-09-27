@@ -130,14 +130,10 @@ export const logIn = async (req, res) => {
 
 export const logOut = async (req, res) => {
     try {
-        const token = req.cookies.token
         res.clearCookie("token");
         res.status(204).json({message: "Logout was successfull"})
-        req.user = jwt.verify(token, key)
-        next()
     } catch (error) {
-        res.clearCookie("token");
-        res.status(401).json({message: "Unauthorized"})
+        res.status(400).json({message: "Something gone wrong"})
     }
 }
 
