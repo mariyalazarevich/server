@@ -121,7 +121,7 @@ export const logIn = async (req, res) => {
         )
 
         res.cookie("token", token, {httpOnly: true})
-        res.status(200).json(token)
+        res.status(200).json({token: token, login: existUser.login, _id: existUser._id})
 
     } catch (error) {
         res.status(500).json({errorMessage: error.message});
@@ -133,7 +133,7 @@ export const logOut = async (req, res) => {
         res.clearCookie("token");
         res.status(204).json({message: "Logout was successfull"})
     } catch (error) {
-        res.status(400).json({message: "Something gone wrong"})
+        res.status(400).json({message: "Something went wrong"})
     }
 }
 

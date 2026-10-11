@@ -3,11 +3,17 @@ import { checkAdmin, checkUser } from "./userController.js";
 
 export const create = async (req, res) => {
     try {   
-        const newOrder = new Orders(req.body)
-        const {date, time} = newOrder
-        const existOrder = await Orders.findOne({ date, time })
+        const userID = req.user._id.toString()
+        const isAdmin = await checkAdmin(req, res)
+        const isVAlidUser = await checkUser(req, res, userID)
+        const newOrder = new Orders({...req.body, userID, status: "waiting"})
+        const {dateTime} = newOrder
+        const existOrder = await Orders.findOne({ dateTime })
         if (existOrder){
             return res.status(400).json({message: "Order with this datetime already exist"});
+        }
+        if (!isAdmin && !isVAlidUser){
+            return res.status(403).json({message: "Forbidden"})
         }
         const savedOrder = await newOrder.save();
         res.status(200).json(savedOrder);
